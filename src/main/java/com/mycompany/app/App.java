@@ -25,7 +25,7 @@ public class App {
         String[] params = new String[1];
         params[0] = "hello";
 
-        NodeScript echartsScript = env.createScript("index.js", new File("src/echarts/src/index.js"), params);
+        NodeScript echartsScript = env.createScript("index.js", new File("src/main/echarts/src/index.js"), params);
 
         // Wait for the script to complete
         System.out.println("Launching ECharts on port 8080");

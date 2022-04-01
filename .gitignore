@@ -1,5 +1,10 @@
 .idea/
 
+#node
+src/main/echarts/node_modules/
+src/main/echarts/node/
+src/echarts/node_modules/
+
 #dynamic files
 config.json
 
