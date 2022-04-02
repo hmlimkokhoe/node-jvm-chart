@@ -89,7 +89,6 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
-        <!-- Maven Assembly Plugin -->
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <configuration>
@@ -110,8 +109,8 @@
           <configuration>
             <nodeVersion>v16.13.1</nodeVersion>
             <npmVersion>8.1.2</npmVersion>
-            <workingDirectory>src/main/echarts</workingDirectory>
-            <installDirectory>src/main/echarts</installDirectory>
+            <workingDirectory>src/main/resources/echarts</workingDirectory>
+            <installDirectory>src/main/resources/echarts</installDirectory>
             <arguments>install</arguments>
           </configuration>
           <executions>
