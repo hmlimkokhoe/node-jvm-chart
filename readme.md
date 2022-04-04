@@ -8,5 +8,7 @@ as an SVG.
 The project is bundled into an executable JAR file using the Apache Maven Assembly Plugin, which allows us to bundle all dependencies at once. Finally, the main class defined in the JAR file is executed using the `java` command.
 
 # How to run build
-1. `mvn clean install assembly:single` - Packages the application into a JAR file, while also automatically installing node dependencies for ECharts using the `frontend-maven-plugin`.
+1. `mvn clean install assembly:single`
 2. `java -cp target/trireme-java-1.0-SNAPSHOT-jar-with-dependencies.jar com.mycompany.app.App`
+
+Note to 1. Packages the application into a JAR file, while also automatically installing node dependencies for ECharts using the `frontend-maven-plugin`.
