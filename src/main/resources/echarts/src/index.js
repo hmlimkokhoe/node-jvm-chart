@@ -1,12 +1,19 @@
-// var http = require("http");
+var http = require("http");
+
+console.log(process.cwd());
+
 var chartRenderer = require("./charts");
 var filesaver = require("./charts/filesaver");
+
 //console.log(process.argv) <-- used for checking if parameters from Java were sent
 
 const svgString = chartRenderer.renderChart(800, 600);
+console.log('============================ Inside ECharts ============================')
+console.log(svgString)
+console.log('======================================================== ')
+
 filesaver.exportSvgToFile(svgString);
 
-/*
 http
   .createServer(function (req, res) {
     res.writeHead(200, {
@@ -16,6 +23,5 @@ http
     res.end();
   })
   .listen(8080);
-*/
 
-// return chartRenderer.renderChart(800,600);
+return chartRenderer.renderChart(800,600);

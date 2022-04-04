@@ -8,17 +8,22 @@ import java.io.IOException;
  * Converts a Configuration object to a JSON file.
  */
 public class JsonConverter {
-    Configuration config = new Configuration(800, 600);
 
     /**
      * Create a JSON file from a Configuration object.
      */
-    public void createJson() {
+    public void createJson(Configuration config) {
+
+        if ((config.getWidth() <= 0 || config.getHeight() <= 0) ) {
+            System.out.println("Unable to build JSON file due to invalid configuration.");
+            return;
+        }
+
         final ObjectMapper mapper = new ObjectMapper();
-        File configJson = new File("target/config.json");
+        File jsonFile = new File("target/config.json");
 
         try {
-            mapper.writeValue(configJson, config);
+            mapper.writeValue(jsonFile, config);
         } catch (IOException e) {
             System.out.println("Unable to build json file.");
             e.printStackTrace();

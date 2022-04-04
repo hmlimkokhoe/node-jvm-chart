@@ -6,6 +6,7 @@ src/main/resources/echarts/node_modules
 
 #dynamic files
 config.json
+src/main/resources/echarts/output/
 
 target/
 pom.xml.tag
