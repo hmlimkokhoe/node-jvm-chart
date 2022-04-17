@@ -4,9 +4,13 @@ if (trireme.isTrireme()) {
     console.log('We are running on Trireme.');
 }*/
 
-console.log(process.cwd());
-//var echarts = require("echarts");
-var echarts = require("/home/lim/Projects/trireme-java/src/main/resources/echarts/node_modules/echarts");
+// console.log(process.cwd());
+//const echarts = require("./echarts");
+console.log('==== START OF NODE-JS LOGGING ====');
+
+const echarts = require("/home/lim/Projects/trireme-java/src/main/resources/echarts/node_modules/echarts");
+const fs = require('fs');
+const path = require('path');
 
 const defaultConfig = {
     renderer: "svg",
@@ -49,9 +53,28 @@ function renderChart(widthParam, heightParam) {
 //console.log(process.argv) <-- used for checking if parameters from Java were sent
 
 const svgString = renderChart(800, 600);
+// console.log("Incoming string in Node.js...")
 console.log(svgString)
 
-//filesaver.exportSvgToFile(svgString);
+exportSvgToFile = (svgStringParam) => {
+    let svgString = "";
+
+    if (svgStringParam.length > 0) {
+        svgString = svgStringParam;
+    }
+
+    const writePath = path.join(process.cwd(), "output/svg.txt");
+
+    fs.writeFile(writePath, svgString, (err) => {
+        if (err) {
+            console.log("Failed to export SVG:");
+            return console.error(err);
+        }
+    });
+}
+
+exportSvgToFile(svgString);
+
 /*
 http
   .createServer(function (req, res) {
@@ -63,4 +86,5 @@ http
   })
   .listen(8080);
 */
+console.log('==== END OF NODE-JS LOGGING ====');
 return svgString;

@@ -1,15 +1,11 @@
 package com.mycompany.app;
 
+import com.mycompany.app.filereader.TextParser;
 import com.mycompany.app.util.ResourcesResolver;
-import io.apigee.trireme.core.NodeEnvironment;
-import io.apigee.trireme.core.NodeException;
-import io.apigee.trireme.core.NodeScript;
-import io.apigee.trireme.core.ScriptStatus;
+import io.apigee.trireme.core.*;
 // import io.apigee.trireme.core.ScriptFuture;
 // import org.mozilla.javascript.Scriptable;
 import java.io.*;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 // import com.mycompany.app.json.JsonConverter;
@@ -20,7 +16,7 @@ import java.util.concurrent.ExecutionException;
  * TODO: refactor the throws parameters
  */
 public class App {
-    public static void main( String[] args ) throws NodeException, ExecutionException, InterruptedException {
+    public static void main(String[] args ) throws NodeException, ExecutionException, InterruptedException {
 
         //TerminalReader terminalReader = new TerminalReader();
         //terminalReader.mapUserInputToJson();
@@ -33,29 +29,19 @@ public class App {
 
         try {
             NodeEnvironment nodeEnv = new NodeEnvironment();
-            ResourcesResolver resourcesResolver = new ResourcesResolver();
-            String eChartsPath = "/echarts/index.js";
+            ResourcesResolver javaScriptResolver = new ResourcesResolver();
+            final String eChartsPath = "/echarts/index.js";
+            final InputStream inputStream = javaScriptResolver.createInputStream(eChartsPath);
 
-            InputStream inputStream = resourcesResolver.createInputStream(eChartsPath);
+            if (inputStream != null) {
+                final File eChartsFile = javaScriptResolver.convertStreamToFile(inputStream);
+                //URL url = javaScriptResolver.getFile("index.js");
+                //System.out.println( url);
 
-            if (inputStream == null) {
-                System.out.println("NOT HERE");
+                echartsInstance = nodeEnv.createScript("index.js", eChartsFile, params);
+            } else {
+                System.out.println("ECharts project not found.");
             }
-
-            File EChartsFile = resourcesResolver.convertStreamToFile(inputStream);
-            //URL url = resourcesResolver.getFile("index.js");
-            //System.out.println( url);
-
-            StringBuilder out = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    out.append(line);
-                }
-            }
-            System.out.println(out);
-
-            echartsInstance = nodeEnv.createScript("index.js", EChartsFile, params);
         } catch (NodeException e) {
             System.out.println("Failed to create NodeScript instance required for launching ECharts.");
             e.printStackTrace();
@@ -63,23 +49,28 @@ public class App {
             e.printStackTrace();
         }
 
-        System.out.println("Returned the following string:");
         if (echartsInstance != null) {
-            ScriptStatus echartsStatus = echartsInstance.execute().get();
+            // Scriptable echartsStatus = echartsInstance.execute().get();
+
+            //TODO: Terminate echartsInstance so that below code can be executed.
+            final ScriptStatus echartsStatus = echartsInstance.execute().get();
+            final String triremeWorkDir = echartsInstance.getWorkingDirectory().toLowerCase();
 
             // Check the exit code
             System.exit(echartsStatus.getExitCode());
 
-            /*TextParser textParser = new TextParser();
-            String svgAsString = textParser.parseTextAsString("echarts/output/svg.txt");
-            System.out.println(svgAsString);
+            System.out.println(triremeWorkDir);
+            if (triremeWorkDir != null) {
+                System.out.println("Trireme WorkDir not found");
+            }
+
+            final TextParser textParser = new TextParser();
+            final String svgAsString = textParser.parseTextAsString(triremeWorkDir);
+            // System.out.println(svgAsString);
 
             if (Objects.equals(svgAsString, "")) {
                 System.out.println("No svg string generated");
-            }*/
-
-            // Check the exit code
-            System.exit(echartsStatus.getExitCode());
+            }
         } else  {
             System.out.println("Terminated process due to missing NodeScript instance.");
         }
@@ -97,7 +88,5 @@ public class App {
             System.out.println("InterruptedException while attempting to get module result.");
             e.printStackTrace();
         }*/
-        // Wait for the script to complete
-        // System.out.println("end of trireme execution");
     }
 }
