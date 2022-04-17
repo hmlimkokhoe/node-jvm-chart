@@ -34,7 +34,7 @@ public class App {
         try {
             NodeEnvironment nodeEnv = new NodeEnvironment();
             ResourcesResolver resourcesResolver = new ResourcesResolver();
-            String eChartsPath = "/echarts/src/index.js";
+            String eChartsPath = "/echarts/index.js";
 
             InputStream inputStream = resourcesResolver.createInputStream(eChartsPath);
 
@@ -53,7 +53,6 @@ public class App {
                     out.append(line);
                 }
             }
-            String out2 = out.toString();
             System.out.println(out);
 
             echartsInstance = nodeEnv.createScript("index.js", EChartsFile, params);
