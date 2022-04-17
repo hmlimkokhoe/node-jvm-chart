@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "echarts": "^5.3.1"
+    "echarts": "^5.3.1",
+    "trireme-support": "^1.0.0"
   }
 }
