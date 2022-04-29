@@ -1,16 +1,11 @@
-//var http = require("http");
-/*var trireme = require('trireme-support');
-if (trireme.isTrireme()) {
-    console.log('We are running on Trireme.');
-}*/
+// console.log(process.argv) <-- used for checking if parameters from Java were sent
+//const http = require("http");
 
-// console.log(process.cwd());
-//const echarts = require("./echarts");
-console.log('==== START OF NODE-JS LOGGING ====');
-
-const echarts = require("/home/lim/Projects/trireme-java/src/main/resources/echarts/node_modules/echarts");
+// const echarts = require("/home/lim/Projects/trireme-java/src/main/resources/echarts/node_modules/echarts");
+const echarts = require("echarts");
 const fs = require('fs');
 const path = require('path');
+const os = require("os");
 
 const defaultConfig = {
     renderer: "svg",
@@ -35,6 +30,12 @@ const defaultOptions = {
     ]
 }
 
+/**
+ * Renders chart model parameter as SVG string.
+ * @param widthParam
+ * @param heightParam
+ * @returns {string}
+ */
 function renderChart(widthParam, heightParam) {
     let chartConfig = Object.assign({}, defaultConfig);
 
@@ -50,29 +51,28 @@ function renderChart(widthParam, heightParam) {
     return chart.renderToSVGString();
 }
 
-//console.log(process.argv) <-- used for checking if parameters from Java were sent
-
-const svgString = renderChart(800, 600);
-// console.log("Incoming string in Node.js...")
-console.log(svgString)
-
+/**
+ * Exports the ECharts svg string to the temp directory of the operating system.
+ * @param {String} svgStringParam
+ */
 exportSvgToFile = (svgStringParam) => {
+    const writePath = path.join(os.tmpdir(), "echartsSvg.txt");
     let svgString = "";
 
     if (svgStringParam.length > 0) {
         svgString = svgStringParam;
+    } else {
+        return;
     }
 
-    const writePath = path.join(process.cwd(), "output/svg.txt");
-
-    fs.writeFile(writePath, svgString, (err) => {
-        if (err) {
-            console.log("Failed to export SVG:");
-            return console.error(err);
-        }
-    });
+    try {
+        fs.writeFileSync(writePath, svgString);
+    } catch (err) {
+        console.error(err);
+    }
 }
 
+const svgString = renderChart(800, 600);
 exportSvgToFile(svgString);
 
 /*
@@ -86,5 +86,4 @@ http
   })
   .listen(8080);
 */
-console.log('==== END OF NODE-JS LOGGING ====');
-return svgString;
+process.exit(1);
