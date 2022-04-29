@@ -2,15 +2,14 @@
   "name": "charts-producer",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "chartRenderer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "start": "node chartRenderer.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "echarts": "^5.3.1",
-    "trireme-support": "^1.0.0"
+    "echarts": "^5.3.1"
   }
 }

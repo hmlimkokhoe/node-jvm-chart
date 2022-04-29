@@ -20,6 +20,16 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.36</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
@@ -32,9 +42,9 @@
       <version>0.9.4</version>
     </dependency>
     <dependency>
-    <groupId>io.apigee.trireme</groupId>
-    <artifactId>trireme-node10src</artifactId>
-    <version>0.9.4</version>
+      <groupId>io.apigee.trireme</groupId>
+      <artifactId>trireme-node10src</artifactId>
+      <version>0.9.4</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -62,8 +72,30 @@
         </plugin>
         <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
+          <version>3.2.0</version>
+          <executions>
+            <execution>
+              <id>copy-echarts-files</id>
+              <goals>
+                <goal>copy-resources</goal>
+              </goals>
+              <phase>validate</phase>
+              <configuration>
+                <outputDirectory>${java.io.tmpdir}</outputDirectory>
+                <overwrite>true</overwrite>
+                <resources>
+                  <resource>
+                    <directory>src/main/resources/echarts</directory>
+                    <include>package.json</include>
+                    <include>package-lock.json</include>
+                    <filtering>true</filtering>
+                  </resource>
+                </resources>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -80,6 +112,14 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addClasspath>true</addClasspath>
+                <mainClass>com.mycompany.app.App</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
@@ -110,6 +150,14 @@
               <descriptorRef>jar-with-dependencies</descriptorRef>
             </descriptorRefs>
           </configuration>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>com.github.eirslett</groupId>
@@ -118,8 +166,8 @@
           <configuration>
             <nodeVersion>v16.13.1</nodeVersion>
             <npmVersion>8.1.2</npmVersion>
-            <workingDirectory>src/main/resources/echarts</workingDirectory>
-            <installDirectory>src/main/resources/echarts</installDirectory>
+            <workingDirectory>${java.io.tmpdir}</workingDirectory>
+            <installDirectory>${java.io.tmpdir}</installDirectory>
             <arguments>install</arguments>
           </configuration>
           <executions>
@@ -128,12 +176,14 @@
               <goals>
                 <goal>install-node-and-npm</goal>
               </goals>
+              <phase>process-resources</phase>
             </execution>
             <execution>
               <id>npm install</id>
               <goals>
                 <goal>npm</goal>
               </goals>
+              <phase>process-resources</phase>
               <configuration>
                 <arguments>install</arguments>
               </configuration>
