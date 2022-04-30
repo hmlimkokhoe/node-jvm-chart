@@ -166,8 +166,8 @@
           <configuration>
             <nodeVersion>v16.13.1</nodeVersion>
             <npmVersion>8.1.2</npmVersion>
-            <workingDirectory>${java.io.tmpdir}</workingDirectory>
-            <installDirectory>${java.io.tmpdir}</installDirectory>
+            <workingDirectory>${basedir}/src/main/resources/echarts</workingDirectory>
+            <installDirectory>target</installDirectory>
             <arguments>install</arguments>
           </configuration>
           <executions>

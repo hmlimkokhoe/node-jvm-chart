@@ -31,18 +31,21 @@ public class App {
 
         try {
             final String fileName = "chartRenderer.js";
+            final String nodeModulesName = "node_modules";
             final String eChartsPath = "/echarts/" + fileName;
+            final String nodeModulesPath = "/echarts/" + nodeModulesName;
+
             NodeEnvironment nodeEnv = new NodeEnvironment();
             ResourcesResolver javaScriptResolver = new ResourcesResolver();
-            final File eChartsFile = javaScriptResolver.createScriptFile(eChartsPath);
+
+            final File eChartsFile = javaScriptResolver.createJavaScriptFile(eChartsPath);
+            javaScriptResolver.createNodeModulesDirectory(nodeModulesName, nodeModulesPath);
 
             if (eChartsFile.isFile()) {
                 echartsInstance = nodeEnv.createScript(fileName, eChartsFile, params);
-            } else {
-                LOG.debug("");
             }
         } catch (NodeException | IOException e) {
-            LOG.error("Unable to create ECharts script due to missing input stream.", e);
+            LOG.error("Cannot execute ECharts in Trireme due to missing scripts.", e);
         }
 
         if (echartsInstance != null) {
@@ -76,8 +79,6 @@ public class App {
         String[] params = new String[1];
         params[0] = "";
         String svgAsString = createSvgString(params);
-        LOG.info("Created svg string below:");
-        LOG.info(svgAsString);
 
         //System.out.println("Launching ECharts on port 8080");
         //ScriptStatus echartsStatus = echartsInstance.execute().get();
