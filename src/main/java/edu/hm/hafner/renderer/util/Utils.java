@@ -1,6 +1,6 @@
-package com.mycompany.app.util;
+package edu.hm.hafner.renderer.util;
 
-import com.mycompany.app.output.TextParser;
+import edu.hm.hafner.renderer.output.TextParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
