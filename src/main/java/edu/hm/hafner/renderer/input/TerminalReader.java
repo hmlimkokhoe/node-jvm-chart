@@ -1,7 +1,7 @@
-package com.mycompany.app.input;
+package edu.hm.hafner.renderer.input;
 
-import com.mycompany.app.json.Configuration;
-import com.mycompany.app.json.JsonConverter;
+import edu.hm.hafner.renderer.json.Configuration;
+import edu.hm.hafner.renderer.json.JsonConverter;
 
 import java.util.NoSuchElementException;
 import java.util.Scanner;

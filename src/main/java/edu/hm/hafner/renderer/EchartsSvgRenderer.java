@@ -1,7 +1,7 @@
-package com.mycompany.app;
+package edu.hm.hafner.renderer;
 
-import com.mycompany.app.output.TextParser;
-import com.mycompany.app.util.ResourcesResolver;
+import edu.hm.hafner.renderer.output.TextParser;
+import edu.hm.hafner.renderer.util.ResourcesResolver;
 
 import io.apigee.trireme.core.NodeEnvironment;
 import io.apigee.trireme.core.NodeException;
@@ -11,7 +11,6 @@ import io.apigee.trireme.core.ScriptStatus;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-// import com.mycompany.app.json.JsonConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +20,11 @@ import org.slf4j.LoggerFactory;
  * TODO: input Jar file, output to drive
  * TODO: extract JAR
  */
-public class App {
-    private static final Logger LOG = LoggerFactory.getLogger(App.class);
+public class EchartsSvgRenderer {
+    private static final Logger LOG = LoggerFactory.getLogger(EchartsSvgRenderer.class);
 
     //TODO: createScript String scriptName, String script, String[] args
-    public static String createSvgString(String[] params) {
+    private static String createSvgString(String[] params) {
         String svgAsString = "";
         NodeScript echartsInstance = null;
 
@@ -70,18 +69,15 @@ public class App {
         return svgAsString;
     }
 
-    public static void main(String[] args ) {
-        //TerminalReader terminalReader = new TerminalReader();
-        //terminalReader.mapUserInputToJson();
-        //JsonConverter builder = new JsonConverter();
-        //builder.createJson();
+    public String render() {
+        try {
+            String[] params = new String[1];
+            params[0] = "";
 
-        String[] params = new String[1];
-        params[0] = "";
-        String svgAsString = createSvgString(params);
-
-        //System.out.println("Launching ECharts on port 8080");
-        //ScriptStatus echartsStatus = echartsInstance.execute().get();
-        //echartsInstance.close();
+            return createSvgString(params);
+        } catch (IllegalArgumentException e) { // in case of an invalid user input
+            LOG.error("Failed to create SVG String due to system errors", e);
+        }
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-package com.mycompany.app.json;
+package edu.hm.hafner.renderer.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;

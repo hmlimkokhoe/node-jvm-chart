@@ -1,4 +1,4 @@
-package com.mycompany.app.json;
+package edu.hm.hafner.renderer.json;
 
 /**
  * Configures the ECharts output.

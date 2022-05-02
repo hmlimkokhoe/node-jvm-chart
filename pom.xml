@@ -4,13 +4,35 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.mycompany.app</groupId>
+  <parent>
+    <groupId>edu.hm.hafner</groupId>
+    <artifactId>codingstyle-pom</artifactId>
+    <version>2.25.0</version>
+    <relativePath />
+  </parent>
+
   <artifactId>trireme-java</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>trireme-java</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <name>SVG Chart Producer</name>
+  <description>Provides an SVG chart as string using Java and the "Trireme" JVM-embedded Node service</description>
+
+  <licenses>
+    <license>
+      <name>MIT license</name>
+      <comments>All source code is copyrighted by Ullrich Hafner and licensed under the MIT license.</comments>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Kok Hoe Lim</name>
+      <id>hmlimkokhoe</id>
+      <email>k.lim@hm.edu</email>
+      <organization>Munich University of Applied Sciences</organization>
+      <organizationUrl>https://www.hm.edu/en/index.en.html</organizationUrl>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -116,7 +138,7 @@
             <archive>
               <manifest>
                 <addClasspath>true</addClasspath>
-                <mainClass>com.mycompany.app.App</mainClass>
+                <mainClass>edu.hm.hafner.renderer.EchartsSvgRenderer</mainClass>
               </manifest>
             </archive>
           </configuration>
@@ -143,7 +165,7 @@
           <configuration>
             <archive>
               <manifest>
-                <mainClass>com.mycompany.app.App</mainClass>
+                <mainClass>edu.hm.hafner.renderer.EchartsSvgRenderer</mainClass>
               </manifest>
             </archive>
             <descriptorRefs>
