@@ -38,6 +38,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
+    <module.name>trireme.java</module.name>
   </properties>
 
   <dependencies>
@@ -92,7 +93,7 @@
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
-        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging-->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
@@ -105,11 +106,11 @@
               </goals>
               <phase>validate</phase>
               <configuration>
-                <outputDirectory>${java.io.tmpdir}</outputDirectory>
+                <outputDirectory>${build.directory}</outputDirectory>
                 <overwrite>true</overwrite>
                 <resources>
                   <resource>
-                    <directory>src/main/resources/echarts</directory>
+                    <directory>${project.basedir}/src/main/resources/echarts</directory>
                     <include>package.json</include>
                     <include>package-lock.json</include>
                     <filtering>true</filtering>
@@ -188,8 +189,8 @@
           <configuration>
             <nodeVersion>v16.13.1</nodeVersion>
             <npmVersion>8.1.2</npmVersion>
-            <workingDirectory>${basedir}/src/main/resources/echarts</workingDirectory>
             <installDirectory>target</installDirectory>
+            <workingDirectory>${build.outputDirectory}/echarts</workingDirectory>
             <arguments>install</arguments>
           </configuration>
           <executions>

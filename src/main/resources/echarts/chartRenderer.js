@@ -1,19 +1,16 @@
 // console.log(process.argv) <-- used for checking if parameters from Java were sent
-//const http = require("http");
-
-// const echarts = require("/home/lim/Projects/trireme-java/src/main/resources/echarts/node_modules/echarts");
-const echarts = require("echarts");
+const echarts = require(process.argv[process.argv.length - 1].toString() + "/echarts");
 const fs = require('fs');
 const path = require('path');
 const os = require("os");
 
+//TODO: convert as JUnit tests
 const defaultConfig = {
     renderer: "svg",
     ssr: true,
     width: 400,
     height: 300
 }
-
 const defaultOptions = {
     xAxis: {
         type: "category",
@@ -56,7 +53,7 @@ function renderChart(widthParam, heightParam) {
  * @param {String} svgStringParam
  */
 exportSvgToFile = (svgStringParam) => {
-    const writePath = path.join(os.tmpdir(), "echartsSvg.txt");
+    const writePath = path.join(os.tmpdir(), "echartsSvg.svg");
     let svgString = "";
 
     if (svgStringParam.length > 0) {
@@ -74,16 +71,4 @@ exportSvgToFile = (svgStringParam) => {
 
 const svgString = renderChart(800, 600);
 exportSvgToFile(svgString);
-
-/*
-http
-  .createServer(function (req, res) {
-    res.writeHead(200, {
-      "Content-Type": "application/xml"
-    });
-    res.write(chartRenderer.renderChart(800, 600));
-    res.end();
-  })
-  .listen(8080);
-*/
 process.exit(1);
