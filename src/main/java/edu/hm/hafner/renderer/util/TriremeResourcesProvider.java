@@ -10,17 +10,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import edu.hm.hafner.renderer.output.TextParser;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 /**
- * Provides the ECharts dependency and chart rendering JavaScript to Trireme.
+ * Provides the ECharts dependency and JavaScript file for chart rendering to Trireme.
  */
 public class TriremeResourcesProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TextParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TriremeResourcesProvider.class);
 
     /**
      * Creates an Inputstream on elements found in the resources directory.
@@ -37,10 +38,10 @@ public class TriremeResourcesProvider {
     }
 
     /**
-     * Copies a JavaScript file resource for use by Trireme.
-     * @param filePath Path of JavaScript file
-     * @return Copy of JavaScript file as temp file.
-     * @throws IOException
+     * Copies a JavaScript rendering file resource for use by Trireme.
+     * @param filePath Path of JavaScript rendering file.
+     * @return Copy of JavaScript rendering file as temp file.
+     * @throws IOException Thrown in case creation of temp file or copying the InputStream fails.
      */
     public File copyJavaScriptFile(String filePath) throws IOException {
         final InputStream inputStream = createInputStreamFromResource(filePath);
@@ -52,84 +53,89 @@ public class TriremeResourcesProvider {
 
         if (inputStream != null) {
             IOUtils.copy(inputStream, outputStream);
-            LOG.info("Copied ECharts Javascript file for usage by Trireme.");
+            LOG.info("Copied ECharts Javascript rendering file for usage by Trireme.");
         }
 
         return tempFile;
     }
 
-    private Path createTempDirectory() {
+    /**
+     * Creates a temporary directory for usage by Trireme and returns its respective path as string.
+     * @return Path of temporary directory as string.
+     */
+    private String createTempDirectory() {
         try {
-            return Files.createTempDirectory("trireme");
+            Path tempDirectoryPath = Files.createTempDirectory("trireme");
+
+            if (tempDirectoryPath != null) {
+                return tempDirectoryPath.toString();
+            }
+
         } catch (IOException e) {
-            LOG.error("Failed to a temp directory in the operating system", e);
+            LOG.error("Failed to a create temporary directory in the operating system", e);
         }
-        return null;
+        return "";
     }
 
     /**
-     * TODO: Build a directory with files and pass them to FileUtils.copyDirectory(). While we are passing parameters the correct way,
-     *       the File param srcDir doesn't actually exist "in JAR context", despite having a working getAbsolutePath() method.
-     * TODO:  (alt) Use Files.walk: https://www.baeldung.com/java-copy-directory (it also complains about
-     * TODO:  (alt) Use Files.copy will copy a directory but without any files: https://docs.oracle.com/javase/tutorial/essential/io/copy.html
-     * Creates the node_modules directory necessary to execute ECharts in Trireme.
-     * @param nodeModulesPath
-     * @throws IOException
+     * Resolves path of directory or file.
+     * TODO: Doesn't work in JAR files.
+     * @param path Path of directory or file to be resolved.
+     * @return Resolved path
      */
-    public String copyNodeModulesFolder(String nodeModulesPath) throws IOException {
-        String sourceDirectoryPathString = "";
-        String tempDirectoryPathString = "";
-        Path tempDirectoryPath = createTempDirectory();
-
-        //String nodeModulesFolderName = "";
-        /*if (!nodeModulesPath.isBlank()) {
-            nodeModulesFolderName = nodeModulesPath.split("/")[2];
-        }*/
-
-        if (tempDirectoryPath != null) {
-            tempDirectoryPathString = tempDirectoryPath.toString();
-        }
-
-        //final String tempDirectoryPathString = Utils.setTempDirectory(nodeModulesFolderName);
-
-        //TODO: getResource() doesn't work in JAR files, change to standalone method
+    private String resolvePath(String path) {
         try {
-            final URL sourceDirUrl = getClass().getResource(nodeModulesPath);
+            final URL sourceDirUrl = getClass().getResource(path);
             if (sourceDirUrl != null) {
-                sourceDirectoryPathString = sourceDirUrl.getPath();  //jar: file:/home/lim/Projects/trireme-java/target/trireme-java-1.0-SNAPSHOT-jar-with-dependencies.jar!/echarts/node_modules
-                LOG.info(sourceDirUrl.getFile());
+                LOG.debug("Path of node_modules folder to copy: {}", sourceDirUrl.getFile());
+                return sourceDirUrl.getPath();
             }
         } catch (NullPointerException e) {
             LOG.error("Failed to create temp directory due to missing source directory.", e);
         }
+        return "";
+    }
+
+    /**
+     * Delete file created in temporary directory upon exit of the application.
+     * @param target Path of the file to be deleted.
+     */
+    private void deleteTempFileOnExit(String target) {
+        File tempDirectory = new File(target);
+        tempDirectory.deleteOnExit();
+    }
+
+    /**
+     * Clones the node_modules directory for usage by Trireme.
+     * @param nodeModulesPath Path of original node_modules directory
+     */
+    public String copyNodeModulesFolder(String nodeModulesPath) {
+        String tempDirectoryPathString = createTempDirectory();
+        String sourceDirectoryPathString = resolvePath(nodeModulesPath);
 
         try {
-            final File srcDir = new File(sourceDirectoryPathString);  //jar: file doesn't exist. destDir actually exists
-            LOG.info("Check me! '" + srcDir.getAbsolutePath() + "'");  //same as in line 79
-            // FileUtils.copyDirectory(srcDir, destDir, false);
-            // FileUtils.copyDirectoryToDirectory(srcDir, destDir);
-
             final Path sourceDirectoryPath = Paths.get(sourceDirectoryPathString);
-            // final Path targetDir = Paths.get(tempDirectoryPathString);
 
             try (Stream<Path> walk = Files.walk(sourceDirectoryPath)) {
                 final String finalSourceDirString = sourceDirectoryPathString;
                 final String finalTempDirectoryPathString = tempDirectoryPathString;
 
-                walk.forEach(source -> {  //example: /home/lim/Projects/trireme-java/target/classes/echarts/node_modules/zrender/src/core/GestureMgr.ts
-                            Path destination = Paths.get(finalTempDirectoryPathString, source.toString()
+                walk.forEach(source -> {
+                            Path target = Paths.get(finalTempDirectoryPathString, source.toString()
                                     .substring(finalSourceDirString.length()));
                             try {
-                                //LOG.info(source.toString());
-                                Files.copy(source, destination);
+                                LOG.debug(target.toString());
+                                Files.copy(source, target, REPLACE_EXISTING);
+                                deleteTempFileOnExit(target.toString());
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                LOG.error("Failed to copy file to target directory.", e);
                             }
                         }
                 );
+                LOG.info("Copied node_modules to temporary directory for usage by Trireme.");
             }
         } catch (IOException e) {
-            LOG.error("Failed to copy files into temp directory", e);
+            LOG.error("Failed to copy files into target directory", e);
         }
         return tempDirectoryPathString;
     }

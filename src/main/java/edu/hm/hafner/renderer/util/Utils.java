@@ -1,12 +1,12 @@
 package edu.hm.hafner.renderer.util;
 
-import edu.hm.hafner.renderer.output.TextParser;
+import edu.hm.hafner.renderer.output.SvgParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Utils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TextParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
 
     private static String getTempDir() {
         String tempDir = "";
