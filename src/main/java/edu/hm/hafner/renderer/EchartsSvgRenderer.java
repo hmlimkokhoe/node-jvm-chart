@@ -1,7 +1,7 @@
 package edu.hm.hafner.renderer;
 
 import edu.hm.hafner.renderer.output.TextParser;
-import edu.hm.hafner.renderer.util.ResourcesResolver;
+import edu.hm.hafner.renderer.util.TriremeResourcesProvider;
 
 import io.apigee.trireme.core.NodeEnvironment;
 import io.apigee.trireme.core.NodeException;
@@ -23,25 +23,26 @@ import org.slf4j.LoggerFactory;
 public class EchartsSvgRenderer {
     private static final Logger LOG = LoggerFactory.getLogger(EchartsSvgRenderer.class);
 
+    //TODO: non-static, param1: String options, param2: String parameters
     //TODO: createScript String scriptName, String script, String[] args
     private static String createSvgString(String[] params) {
         String svgAsString = "";
         NodeScript echartsInstance = null;
 
         try {
-            final String fileName = "chartRenderer.js";
-            final String nodeModulesName = "node_modules";
-            final String eChartsPath = "/echarts/" + fileName;
-            final String nodeModulesPath = "/echarts/" + nodeModulesName;
+            final String javaScriptFileName = "chartRenderer.js";
+            final String javaScriptFilePath = "/echarts/" + javaScriptFileName;
+            final String nodeModulesPath = "/echarts/node_modules";
 
-            NodeEnvironment nodeEnv = new NodeEnvironment();
-            ResourcesResolver javaScriptResolver = new ResourcesResolver();
+            final NodeEnvironment nodeEnv = new NodeEnvironment();
+            final TriremeResourcesProvider triremeResourcesProvider = new TriremeResourcesProvider();
 
-            final File eChartsFile = javaScriptResolver.createJavaScriptFile(eChartsPath);
-            javaScriptResolver.createNodeModulesDirectory(nodeModulesName, nodeModulesPath);
+            final File eChartsFile = triremeResourcesProvider.copyJavaScriptFile(javaScriptFilePath);
+            final String triremeWorkingDirectoryPath = triremeResourcesProvider.copyNodeModulesFolder(nodeModulesPath);
+            params[0] = triremeWorkingDirectoryPath;
 
             if (eChartsFile.isFile()) {
-                echartsInstance = nodeEnv.createScript(fileName, eChartsFile, params);
+                echartsInstance = nodeEnv.createScript(javaScriptFileName, eChartsFile, params);
             }
         } catch (NodeException | IOException e) {
             LOG.error("Cannot execute ECharts in Trireme due to missing scripts.", e);

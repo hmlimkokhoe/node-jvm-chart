@@ -16,16 +16,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Resolves the 'chartRenderer.js' entrypoint of ECharts. Required for loading ECharts in a JAR file.
+ * Provides the ECharts dependency and chart rendering JavaScript to Trireme.
  */
-public class ResourcesResolver {
+public class TriremeResourcesProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(TextParser.class);
 
     /**
      * Creates an Inputstream on elements found in the resources directory.
      * @param name Path of input elements
-     * @return
+     * @return InputStream of input elements
      */
     private InputStream createInputStreamFromResource(String name) {
         try {
@@ -42,20 +42,29 @@ public class ResourcesResolver {
      * @return Copy of JavaScript file as temp file.
      * @throws IOException
      */
-    public File createJavaScriptFile(String filePath) throws IOException {
+    public File copyJavaScriptFile(String filePath) throws IOException {
         final InputStream inputStream = createInputStreamFromResource(filePath);
 
         final File tempFile = File.createTempFile("index", ".js");
         tempFile.deleteOnExit();
 
-        final FileOutputStream out = new FileOutputStream(tempFile);
+        final FileOutputStream outputStream = new FileOutputStream(tempFile);
 
         if (inputStream != null) {
-            IOUtils.copy(inputStream, out);
+            IOUtils.copy(inputStream, outputStream);
             LOG.info("Copied ECharts Javascript file for usage by Trireme.");
         }
 
         return tempFile;
+    }
+
+    private Path createTempDirectory() {
+        try {
+            return Files.createTempDirectory("trireme");
+        } catch (IOException e) {
+            LOG.error("Failed to a temp directory in the operating system", e);
+        }
+        return null;
     }
 
     /**
@@ -64,18 +73,30 @@ public class ResourcesResolver {
      * TODO:  (alt) Use Files.walk: https://www.baeldung.com/java-copy-directory (it also complains about
      * TODO:  (alt) Use Files.copy will copy a directory but without any files: https://docs.oracle.com/javase/tutorial/essential/io/copy.html
      * Creates the node_modules directory necessary to execute ECharts in Trireme.
-     * @param directoryPrefix Name for creating directory
-     * @param folderName
+     * @param nodeModulesPath
      * @throws IOException
      */
-    public void createNodeModulesDirectory(String directoryPrefix, String folderName) throws IOException {
-        String sourceDirString = "";
-        final String tempDir = Utils.setTempDirectory(directoryPrefix);
+    public String copyNodeModulesFolder(String nodeModulesPath) throws IOException {
+        String sourceDirectoryPathString = "";
+        String tempDirectoryPathString = "";
+        Path tempDirectoryPath = createTempDirectory();
 
+        //String nodeModulesFolderName = "";
+        /*if (!nodeModulesPath.isBlank()) {
+            nodeModulesFolderName = nodeModulesPath.split("/")[2];
+        }*/
+
+        if (tempDirectoryPath != null) {
+            tempDirectoryPathString = tempDirectoryPath.toString();
+        }
+
+        //final String tempDirectoryPathString = Utils.setTempDirectory(nodeModulesFolderName);
+
+        //TODO: getResource() doesn't work in JAR files, change to standalone method
         try {
-            final URL sourceDirUrl = getClass().getResource(folderName);
+            final URL sourceDirUrl = getClass().getResource(nodeModulesPath);
             if (sourceDirUrl != null) {
-                sourceDirString = sourceDirUrl.getPath();  //jar: file:/home/lim/Projects/trireme-java/target/trireme-java-1.0-SNAPSHOT-jar-with-dependencies.jar!/echarts/node_modules
+                sourceDirectoryPathString = sourceDirUrl.getPath();  //jar: file:/home/lim/Projects/trireme-java/target/trireme-java-1.0-SNAPSHOT-jar-with-dependencies.jar!/echarts/node_modules
                 LOG.info(sourceDirUrl.getFile());
             }
         } catch (NullPointerException e) {
@@ -83,31 +104,23 @@ public class ResourcesResolver {
         }
 
         try {
-            final Path dirPath = Paths.get(tempDir);
-            Files.createDirectories(dirPath);
-        } catch (IOException e) {
-            LOG.error("Failed to create directory in temp directory of the operating system", e);
-        }
-
-        try {
-            final File srcDir = new File(sourceDirString);  //jar: file doesn't exist. destDir actually exists
-            final File destDir = new File(tempDir);
+            final File srcDir = new File(sourceDirectoryPathString);  //jar: file doesn't exist. destDir actually exists
             LOG.info("Check me! '" + srcDir.getAbsolutePath() + "'");  //same as in line 79
             // FileUtils.copyDirectory(srcDir, destDir, false);
             // FileUtils.copyDirectoryToDirectory(srcDir, destDir);
 
-            final Path sourceDir = Paths.get(sourceDirString);
-            // final Path targetDir = Paths.get(tempDir);
+            final Path sourceDirectoryPath = Paths.get(sourceDirectoryPathString);
+            // final Path targetDir = Paths.get(tempDirectoryPathString);
 
-            final String finalSourceDirString = sourceDirString;
+            try (Stream<Path> walk = Files.walk(sourceDirectoryPath)) {
+                final String finalSourceDirString = sourceDirectoryPathString;
+                final String finalTempDirectoryPathString = tempDirectoryPathString;
 
-            // https://mkyong.com/java/how-to-copy-directory-in-java/
-            try (Stream<Path> walk = Files.walk(sourceDir)) {
                 walk.forEach(source -> {  //example: /home/lim/Projects/trireme-java/target/classes/echarts/node_modules/zrender/src/core/GestureMgr.ts
-                            Path destination = Paths.get(tempDir, source.toString()
+                            Path destination = Paths.get(finalTempDirectoryPathString, source.toString()
                                     .substring(finalSourceDirString.length()));
                             try {
-                                LOG.info(source.toString());
+                                //LOG.info(source.toString());
                                 Files.copy(source, destination);
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -115,18 +128,9 @@ public class ResourcesResolver {
                         }
                 );
             }
-            /*Files.walk(sourceDir)
-                    .forEach(source -> {
-                        Path destination = Paths.get(tempDir, source.toString()
-                                .substring(finalSourceDirString.length()));
-                        try {
-                            Files.copy(source, destination);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });*/
         } catch (IOException e) {
             LOG.error("Failed to copy files into temp directory", e);
         }
+        return tempDirectoryPathString;
     }
 }
