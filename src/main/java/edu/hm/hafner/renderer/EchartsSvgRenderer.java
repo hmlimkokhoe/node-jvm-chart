@@ -1,6 +1,6 @@
 package edu.hm.hafner.renderer;
 
-import edu.hm.hafner.renderer.output.TextParser;
+import edu.hm.hafner.renderer.output.SvgParser;
 import edu.hm.hafner.renderer.util.TriremeResourcesProvider;
 
 import io.apigee.trireme.core.NodeEnvironment;
@@ -23,9 +23,8 @@ import org.slf4j.LoggerFactory;
 public class EchartsSvgRenderer {
     private static final Logger LOG = LoggerFactory.getLogger(EchartsSvgRenderer.class);
 
-    //TODO: non-static, param1: String options, param2: String parameters
-    //TODO: createScript String scriptName, String script, String[] args
-    private static String createSvgString(String[] params) {
+    //TODO: param1: String options, param2: String parameters
+    private String createSvgString(String[] params) {
         String svgAsString = "";
         NodeScript echartsInstance = null;
 
@@ -49,8 +48,8 @@ public class EchartsSvgRenderer {
         }
 
         if (echartsInstance != null) {
-            LOG.info("Executing ECharts in Trireme.");
-            final TextParser textParser = new TextParser();
+            LOG.info("Rendering ECharts charts in Trireme.");
+            final SvgParser svgParser = new SvgParser();
             ScriptStatus echartsStatus = null;
 
             try {
@@ -63,7 +62,7 @@ public class EchartsSvgRenderer {
                 LOG.debug("Trireme instance was closed with exit code 1");
             }
 
-            svgAsString = textParser.parseTextAsString();
+            svgAsString = svgParser.parseSvgAsString();
         } else  {
             LOG.debug("Terminated process due to missing NodeScript instance.");
         }
