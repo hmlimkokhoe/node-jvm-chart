@@ -11,6 +11,7 @@ public class JsonConverter {
 
     /**
      * Create a JSON file from a Configuration object.
+     * @param config - a Configuration class object
      */
     public void createJson(Configuration config) {
 

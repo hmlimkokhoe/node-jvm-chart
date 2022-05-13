@@ -1,8 +1,9 @@
 package edu.hm.hafner.renderer.util;
 
-import edu.hm.hafner.renderer.output.SvgParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 public class Utils {
 
@@ -22,12 +23,13 @@ public class Utils {
 
     /**
      * Returns the temp directory of the operating system.
+     * @param subdirectory - subdirectory inside the temporary directory
      * @return the temp directory as string
      */
-    public static String setTempDirectory(String subdirectory) {
-        final String tempDirectory = getTempDir();
+    public static String setTempDirectory(@Nullable String subdirectory) {
+        String tempDirectory = getTempDir();
 
-        if (subdirectory != null && !subdirectory.isBlank()) {
+        if ((subdirectory != null && !subdirectory.isEmpty()) && (tempDirectory != null && !tempDirectory.isEmpty())) {
             return tempDirectory + "/" + subdirectory;
         }
         return tempDirectory;
