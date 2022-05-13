@@ -108,6 +108,7 @@ public class TriremeResourcesProvider {
     /**
      * Clones the node_modules directory for usage by Trireme.
      * @param nodeModulesPath Path of original node_modules directory
+     * @return Path of temporary directory clone
      */
     public String copyNodeModulesFolder(String nodeModulesPath) {
         String tempDirectoryPathString = createTempDirectory();

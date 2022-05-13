@@ -1,6 +1,6 @@
 package edu.hm.hafner.renderer;
 
-import edu.hm.hafner.renderer.output.SvgParser;
+import edu.hm.hafner.renderer.util.SvgParser;
 import edu.hm.hafner.renderer.util.TriremeResourcesProvider;
 
 import io.apigee.trireme.core.NodeEnvironment;
