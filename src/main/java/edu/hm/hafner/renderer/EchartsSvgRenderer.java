@@ -38,7 +38,7 @@ public class EchartsSvgRenderer {
 
             final File eChartsFile = triremeResourcesProvider.copyJavaScriptFile(javaScriptFilePath);
             final String triremeWorkingDirectoryPath = triremeResourcesProvider.copyNodeModulesFolder(nodeModulesPath);
-            params[0] = triremeWorkingDirectoryPath;
+            params[params.length - 1] = triremeWorkingDirectoryPath;
 
             if (eChartsFile.isFile()) {
                 echartsInstance = nodeEnv.createScript(javaScriptFileName, eChartsFile, params);
@@ -69,10 +69,11 @@ public class EchartsSvgRenderer {
         return svgAsString;
     }
 
-    public String render() {
+    public String render(String configOptions, String exportOptions) {
         try {
-            String[] params = new String[1];
-            params[0] = "";
+            String[] params = new String[3];
+            params[0] = configOptions;
+            params[1] = exportOptions;
 
             return createSvgString(params);
         } catch (IllegalArgumentException e) { // in case of an invalid user input

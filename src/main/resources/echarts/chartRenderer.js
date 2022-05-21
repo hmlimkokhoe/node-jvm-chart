@@ -1,58 +1,59 @@
-// console.log(process.argv) <-- used for checking if parameters from Java were sent
-const echarts = require(process.argv[process.argv.length - 1].toString() + "/echarts");
+const triremeParameters = process.argv;
+const echarts = require(triremeParameters[triremeParameters.length - 1].toString() + "/echarts");
 const fs = require('fs');
 const path = require('path');
 const os = require("os");
 
-//TODO: convert as JUnit tests
-const defaultConfig = {
-    renderer: "svg",
-    ssr: true,
-    width: 400,
-    height: 300
-}
-const defaultOptions = {
-    xAxis: {
-        type: "category",
-        data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    },
-    yAxis: {
-        type: "value"
-    },
-    series: [
-        {
-            data: [120, 200, 150, 80, 70, 110, 130],
-            type: "bar"
+/**
+ * Returns a JSON object built from an ECharts string parameter.
+ * @param jsonTypeValue
+ * @returns {null|any}
+ */
+const getEChartsParameterJson = (jsonTypeValue) => {
+
+    //Removes all characters violating JSON formatting
+    const convertStringToJson = (stringParam) => {
+        stringParam.replace(/\\/i, '');
+        stringParam.replace(/"'/i, '');    // Removes first wrapping double quote
+        stringParam.replace(/'"/i, '');    // Removes last wrapping double quote
+        return JSON.parse(stringParam);
+    }
+
+    if (triremeParameters.length > 0 && jsonTypeValue.length > 0) {
+        let arrayElement = "";
+
+        for (let i = 0; i < triremeParameters.length; i++) {
+            if (triremeParameters[i].includes(jsonTypeValue)) {
+                convertStringToJson(triremeParameters[i]);
+                arrayElement = triremeParameters[i];
+            }
         }
-    ]
+        return convertStringToJson(arrayElement);
+    }
+    return null;
 }
 
 /**
  * Renders chart model parameter as SVG string.
- * @param widthParam
- * @param heightParam
  * @returns {string}
  */
-function renderChart(widthParam, heightParam) {
-    let chartConfig = Object.assign({}, defaultConfig);
+const renderChart = () => {
+    const chartConfigJson = getEChartsParameterJson("data");
+    const chartExportJson = getEChartsParameterJson("renderer");
 
-    if (widthParam > 0 || heightParam > 0 ) {
-        chartConfig.width = widthParam;
-        chartConfig.height = heightParam;
-    } else {
-        return "";
+    if (chartConfigJson != null && chartExportJson != null) {
+        const chart = echarts.init(null, null, chartExportJson);
+        chart.setOption(chartConfigJson);
+        return chart.renderToSVGString();
     }
-
-    const chart = echarts.init(null, null, chartConfig);
-    chart.setOption(defaultOptions);
-    return chart.renderToSVGString();
+    return "";
 }
 
 /**
  * Exports the ECharts svg string to the temp directory of the operating system.
  * @param {String} svgStringParam
  */
-exportSvgToFile = (svgStringParam) => {
+const exportSvgToFile = (svgStringParam) => {
     const writePath = path.join(os.tmpdir(), "echartsSvg.svg");
     let svgString = "";
 
@@ -69,6 +70,12 @@ exportSvgToFile = (svgStringParam) => {
     }
 }
 
-const svgString = renderChart(800, 600);
-exportSvgToFile(svgString);
+const svgString = renderChart();
+
+if (svgString.length > 0) {
+    exportSvgToFile(svgString);
+} else {
+    console.log("Failed to export SVG file, because no SVG String parameter was provided.");
+}
+
 process.exit(1);
