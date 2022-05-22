@@ -90,19 +90,20 @@
       <plugins>
         <plugin>
           <artifactId>maven-antrun-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
           <version>3.0.0</version>
           <executions>
             <execution>
               <phase>test</phase>
               <configuration>
                 <target>
-                  <fileset id="echarts-fileset" dir="${build.outputDirectory}" />
+                  <fileset id="echarts-fileset" dir="${project.build.outputDirectory}" />
                   <pathconvert targetos="unix" pathsep=","
                                property="echarts-file-list" refid="echarts-fileset">
-                    <map from="${build.outputDirectory}" to="" />
+                    <map from="${project.build.outputDirectory}" to="" />
                   </pathconvert>
                   <!--suppress MavenModelInspection -->
-                  <echo file="${build.outputDirectory}/echarts-content.txt">${echarts-file-list}</echo>
+                  <echo file="${project.build.outputDirectory}/echarts-content.txt">${echarts-file-list}</echo>
                 </target>
               </configuration>
               <goals>
