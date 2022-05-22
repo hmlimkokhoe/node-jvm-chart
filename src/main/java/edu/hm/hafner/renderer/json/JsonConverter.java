@@ -16,7 +16,7 @@ public class JsonConverter {
     public void createJson(Configuration config) {
 
         if ((config.getWidth() <= 0 || config.getHeight() <= 0) ) {
-            System.out.println("Unable to build JSON file due to invalid configuration.");
+            // System.out.println("Unable to build JSON file due to invalid configuration.");
             return;
         }
 
@@ -26,7 +26,7 @@ public class JsonConverter {
         try {
             mapper.writeValue(jsonFile, config);
         } catch (IOException e) {
-            System.out.println("Unable to build json file.");
+            // System.out.println("Unable to build json file.");
             e.printStackTrace();
         }
     }

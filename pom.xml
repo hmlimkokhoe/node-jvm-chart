@@ -106,7 +106,7 @@
               </goals>
               <phase>validate</phase>
               <configuration>
-                <outputDirectory>${build.directory}</outputDirectory>
+                <outputDirectory>${project.build.directory}</outputDirectory>
                 <overwrite>true</overwrite>
                 <resources>
                   <resource>
@@ -190,7 +190,7 @@
             <nodeVersion>v16.13.1</nodeVersion>
             <npmVersion>8.1.2</npmVersion>
             <installDirectory>target</installDirectory>
-            <workingDirectory>${build.outputDirectory}/echarts</workingDirectory>
+            <workingDirectory>${project.build.outputDirectory}/echarts</workingDirectory>
             <arguments>install</arguments>
           </configuration>
           <executions>
