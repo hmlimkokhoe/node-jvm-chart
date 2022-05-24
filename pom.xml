@@ -36,8 +36,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.11</maven.compiler.source>
+    <maven.compiler.target>1.11</maven.compiler.target>
     <module.name>trireme.java</module.name>
   </properties>
 
@@ -97,10 +97,10 @@
               <phase>test</phase>
               <configuration>
                 <target>
-                  <fileset id="echarts-fileset" dir="${project.build.outputDirectory}" />
+                  <fileset id="echarts-fileset" dir="${project.build.outputDirectory}/echarts/node_modules" />
                   <pathconvert targetos="unix" pathsep=","
                                property="echarts-file-list" refid="echarts-fileset">
-                    <map from="${project.build.outputDirectory}" to="" />
+                    <map from="${project.build.outputDirectory}/echarts/node_modules" to="" />
                   </pathconvert>
                   <!--suppress MavenModelInspection -->
                   <echo file="${project.build.outputDirectory}/echarts-content.txt">${echarts-file-list}</echo>
