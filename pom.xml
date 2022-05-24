@@ -94,7 +94,7 @@
           <version>3.0.0</version>
           <executions>
             <execution>
-              <phase>test</phase>
+              <phase>compile</phase>
               <configuration>
                 <target>
                   <fileset id="echarts-fileset" dir="${project.build.outputDirectory}/echarts/node_modules" />
