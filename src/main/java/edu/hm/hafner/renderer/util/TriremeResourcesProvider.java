@@ -5,10 +5,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -111,32 +112,54 @@ public class TriremeResourcesProvider {
      * @return Path of temporary directory clone
      */
     public String copyNodeModulesFolder(String nodeModulesPath) {
+        //example source path: /home/lim/hm/node-jvm-chart/target/classes/echarts/node_modules
+        //example target path: /tmp/trireme9684562791274531752
         String tempDirectoryPathString = createTempDirectory();
         String sourceDirectoryPathString = resolvePath(nodeModulesPath);
 
-        try {
-            final Path sourceDirectoryPath = Paths.get(sourceDirectoryPathString);
+        String commaSeparatedPaths = "";
+        String[] paths;
 
-            try (Stream<Path> walk = Files.walk(sourceDirectoryPath)) {
-                final String finalSourceDirString = sourceDirectoryPathString;
-                final String finalTempDirectoryPathString = tempDirectoryPathString;
-
-                walk.forEach(source -> {
-                            Path target = Paths.get(finalTempDirectoryPathString, source.toString()
-                                    .substring(finalSourceDirString.length()));
-                            try {
-                                LOG.debug(target.toString());
-                                Files.copy(source, target, REPLACE_EXISTING);
-                                deleteTempFileOnExit(target.toString());
-                            } catch (IOException e) {
-                                LOG.error("Failed to copy file to target directory.", e);
-                            }
-                        }
-                );
-                LOG.info("Copied node_modules to temporary directory for usage by Trireme.");
+        try (InputStream is = createInputStreamFromResource("/echarts-content.txt")) {
+            if (is != null) {
+                commaSeparatedPaths = new String(IOUtils.toByteArray(is), StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
-            LOG.error("Failed to copy files into target directory", e);
+            LOG.error("Failed to parse comma separated paths.", e);
+        }
+
+        if (!commaSeparatedPaths.isEmpty()) {
+            paths = commaSeparatedPaths.split(",");
+
+            if (paths.length > 0) {
+                for (String path : paths) {
+                    if (!path.contains(".package-lock.json")) {
+                        try {
+                            // example of path: /echarts/build/dev-fast.js
+                            // example of fullSourcePathAsStr: /home/lim/hm/node-jvm-chart/target/classes/echarts/node_modules/zrender/src/core/WeakMap.ts
+                            // example of fullTargetPathAsStr: /tmp/trireme15335638236408877040/zrender/src/core/WeakMap.ts
+
+                            final String fullSourcePathAsStr = sourceDirectoryPathString + path;
+                            final String fullTargetPathAsStr = tempDirectoryPathString + path;
+
+                            //used by Files API.
+                            final Path fullSourcePath = Paths.get(fullSourcePathAsStr);
+                            final Path fullTargetPath = Paths.get(fullTargetPathAsStr);
+                            final Path targetPathWithoutFile = Paths.get(fullTargetPathAsStr.substring(0, fullTargetPathAsStr.lastIndexOf("/")));
+
+                            if (!Files.exists(targetPathWithoutFile)) {
+                                Files.createDirectories(targetPathWithoutFile);
+                            }
+                            if (Files.exists(fullSourcePath)) {
+                                Files.copy(fullSourcePath, fullTargetPath, REPLACE_EXISTING);
+                                deleteTempFileOnExit(fullTargetPathAsStr);
+                            }
+                        } catch (IOException | InvalidPathException e) {
+                            LOG.error("Failed to copy node_modules files to tmp directory.", e);
+                        }
+                    }
+                }
+            }
         }
         return tempDirectoryPathString;
     }
