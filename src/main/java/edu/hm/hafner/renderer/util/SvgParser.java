@@ -21,21 +21,17 @@ public class SvgParser {
      */
     public String parseSvgAsString() {
         LOG.debug("Parsing SVG file content as string in Java...");
-        String parsedText = "";
 
         try {
-            final String svgFileName = "echartsSvg.svg";
+            final String svgFileName = "trireme-echarts-output.svg";
             final String svgFilePath = Utils.setTempDirectory(svgFileName);
 
             if (svgFilePath != null && !svgFilePath.isEmpty()) {
-                parsedText = FileUtils.readFileToString(new File(svgFilePath), StandardCharsets.UTF_8);
-                LOG.info("Successfully parsed SVG string.");
+                return FileUtils.readFileToString(new File(svgFilePath), StandardCharsets.UTF_8);
             }
-        } catch (InvalidPathException e) {
-            LOG.error("Failed to read SVG from ECharts due to invalid file path.", e);
-        } catch (IOException e) {
-            LOG.error("Failed to read SVG from ECharts due to missing file path.", e);
+        } catch (InvalidPathException | IOException e) {
+            LOG.error("Failed to read SVG from ECharts.", e);
         }
-        return parsedText;
+        return "";
     }
 }

@@ -54,7 +54,7 @@ const renderChart = () => {
  * @param {String} svgStringParam
  */
 const exportSvgToFile = (svgStringParam) => {
-    const writePath = path.join(os.tmpdir(), "echartsSvg.svg");
+    const writePath = path.join(os.tmpdir(), "trireme-echarts-output.svg");
     let svgString = "";
 
     if (svgStringParam.length > 0) {
