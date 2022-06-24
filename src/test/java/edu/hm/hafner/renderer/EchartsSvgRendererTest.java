@@ -27,7 +27,7 @@ public class EchartsSvgRendererTest extends ResourceTest {
         exportOptions = exportOptions.replace("\n", "");
         configOptions = configOptions.replace("\n", "");
 
-        String result = echartsSvgRenderer.render(configOptions, exportOptions);
+        String result = echartsSvgRenderer.createSvgString(configOptions, exportOptions);
         result = formatStringOutput(result);
 
         String isExpectedResult = toString("screenshots/bar-basic.svg");
@@ -48,7 +48,7 @@ public class EchartsSvgRendererTest extends ResourceTest {
         exportOptions = exportOptions.replace("\n", "");
         configOptions = configOptions.replace("\n", "");
 
-        String result = echartsSvgRenderer.render(configOptions, exportOptions);
+        String result = echartsSvgRenderer.createSvgString(configOptions, exportOptions);
         result = formatStringOutput(result);
 
         String isExpectedResult = toString("screenshots/bar-stack.svg");

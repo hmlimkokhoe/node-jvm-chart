@@ -54,6 +54,8 @@ const renderChart = () => {
  * @param {String} svgStringParam
  */
 const exportSvgToFile = (svgStringParam) => {
+
+    //TODO: trireme ordnername als parameter, not thread-safe
     const writePath = path.join(os.tmpdir(), "trireme-echarts-output.svg");
     let svgString = "";
 
