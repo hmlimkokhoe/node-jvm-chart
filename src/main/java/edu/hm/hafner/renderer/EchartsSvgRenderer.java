@@ -25,11 +25,13 @@ import org.slf4j.LoggerFactory;
 public class EchartsSvgRenderer {
     private static final Logger LOG = LoggerFactory.getLogger(EchartsSvgRenderer.class);
 
-    public static final String javaScriptFileName = "chartRenderer.js";
+    private static final String ECHARTS_PATH = "/echarts/";
 
-    public static final String javaScriptFilePath = "/echarts/" + javaScriptFileName;
+    private static final String JAVASCRIPT_FILENAME = "chartRenderer.js";
 
-    public static final String nodeModulesPath = "/echarts/node_modules";
+    private static final String NODE_MODULES_FOLDER_NAME =  "node_modules";
+
+    private static final String SVG_FILENAME = "echarts-render.svg";
 
     /**
      * Returns an SVG as string by using two options string parameters.
@@ -45,50 +47,55 @@ public class EchartsSvgRenderer {
             throw new IllegalArgumentException("An invalid export options parameter was passed");
         }
 
-        String[] triremeParameters = new String[3];
-        triremeParameters[0] = configOptions;
-        triremeParameters[1] = exportOptions;
-
         NodeScript echartsInstance;
+        String triremeWorkingDirectoryPath = "";
 
         try {
             final NodeEnvironment nodeEnv = new NodeEnvironment();
             final TriremeResourcesProvider triremeResourcesProvider = new TriremeResourcesProvider();
 
-            final File eChartsFile = triremeResourcesProvider.copyJavaScriptFile(javaScriptFilePath);
+            final File eChartsFile =
+                    triremeResourcesProvider.copyJavaScriptFile(ECHARTS_PATH + JAVASCRIPT_FILENAME);
             if (!eChartsFile.isFile()) {
-                throw new FileNotFoundException("System was unable to provide chart rendering scripts.");
+                throw new FileNotFoundException("Failed to load rendering scripts due to incorrect installation.");
             }
 
-            final String triremeWorkingDirectoryPath = triremeResourcesProvider.copyNodeModulesFolder(nodeModulesPath);
+            triremeWorkingDirectoryPath =
+                    triremeResourcesProvider.copyNodeModulesFolder(ECHARTS_PATH + NODE_MODULES_FOLDER_NAME);
             if (triremeWorkingDirectoryPath.length() < 1) {
-                throw new FileNotFoundException("System was unable to provide Node.js library scripts.");
+                throw new FileNotFoundException("Failed to load Node.js scripts due to incorrect installation.");
             }
 
+            // Array length set by both options parameters, SVG file name and file path of Node.js resources
+            String[] triremeParameters = new String[4];
+            triremeParameters[0] = configOptions;
+            triremeParameters[1] = exportOptions;
+            triremeParameters[2] = SVG_FILENAME;
             triremeParameters[triremeParameters.length - 1] = triremeWorkingDirectoryPath;
-            echartsInstance = nodeEnv.createScript(javaScriptFileName, eChartsFile, triremeParameters);
+
+            echartsInstance = nodeEnv.createScript(JAVASCRIPT_FILENAME, eChartsFile, triremeParameters);
         } catch (NodeException | IOException e) {
-            throw new IllegalStateException("Could not execute rendering scripts due to system errors.", e);
+            throw new IllegalStateException("Failed to execute rendering due to system errors.", e);
         }
 
         if (echartsInstance == null) {
             throw new IllegalStateException("Could not render SVG string due to system errors");
         }
 
-        LOG.info("Rendering ECharts charts in Trireme.");
-        final SvgParser svgParser = new SvgParser();
-
         try {
-            // ScriptStatus echartsStatus = echartsInstance.execute().get();
+            LOG.info("Rendering ECharts charts in Trireme.");
             echartsInstance.execute().get();
         } catch (NodeException | InterruptedException | ExecutionException e) {
             throw new IllegalStateException("System could not execute frontend scripts", e);
         }
 
-        // if (echartsStatus != null && echartsStatus.getExitCode() == 1) {
-        //     LOG.debug("Trireme instance was closed with exit code 1");
-        // }
+        final SvgParser svgParser = new SvgParser();
+        String svgAsString = svgParser.parseSvgAsString(triremeWorkingDirectoryPath, SVG_FILENAME);
 
-        return svgParser.parseSvgAsString();
+        if (!svgAsString.isEmpty()) {
+            return svgAsString;
+        } else {
+            throw new IllegalStateException("Failed to provide SVG string due to system errors");
+        }
     }
 }

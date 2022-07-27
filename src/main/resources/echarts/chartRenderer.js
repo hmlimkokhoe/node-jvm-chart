@@ -1,8 +1,14 @@
 const triremeParameters = process.argv;
-const echarts = require(triremeParameters[triremeParameters.length - 1].toString() + "/echarts");
+const tempDirectoryPath = triremeParameters[triremeParameters.length - 1].toString();
+
+if (tempDirectoryPath !== undefined && tempDirectoryPath.length < 0) {
+    console.error("Failed to execute rendering scripts due to incorrect installation of Node.js scripts.");
+    process.exit(1);
+}
+
+const echarts = require(tempDirectoryPath + "/echarts");
 const fs = require('fs');
 const path = require('path');
-const os = require("os");
 
 /**
  * Returns a JSON object built from an ECharts string parameter.
@@ -38,8 +44,11 @@ const getEChartsParameterJson = (jsonTypeValue) => {
  * @returns {string}
  */
 const renderChart = () => {
-    const chartConfigJson = getEChartsParameterJson("data");
-    const chartExportJson = getEChartsParameterJson("renderer");
+    const DATA = "data";
+    const RENDERER = "renderer";
+
+    const chartConfigJson = getEChartsParameterJson(DATA);
+    const chartExportJson = getEChartsParameterJson(RENDERER);
 
     if (chartConfigJson != null && chartExportJson != null) {
         const chart = echarts.init(null, null, chartExportJson);
@@ -54,9 +63,13 @@ const renderChart = () => {
  * @param {String} svgStringParam
  */
 const exportSvgToFile = (svgStringParam) => {
+    let svgFileName = triremeParameters[4];
 
-    //TODO: trireme ordnername als parameter, not thread-safe
-    const writePath = path.join(os.tmpdir(), "trireme-echarts-output.svg");
+    if (svgFileName !== undefined && svgFileName.length < 0) {
+        return;
+    }
+
+    const writePath = path.join(tempDirectoryPath + "/" + svgFileName);
     let svgString = "";
 
     if (svgStringParam.length > 0) {
@@ -77,7 +90,8 @@ const svgString = renderChart();
 if (svgString.length > 0) {
     exportSvgToFile(svgString);
 } else {
-    console.log("Failed to export SVG file, because no SVG String parameter was provided.");
+    console.error("Failed to export SVG render due to incorrect configuration parameters.");
 }
 
-process.exit(1);
+//TODO: Node.js should terminate on its own
+process.exit(0);
