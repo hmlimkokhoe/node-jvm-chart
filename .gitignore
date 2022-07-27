@@ -5,6 +5,7 @@ src/main/resources/echarts/node
 src/main/resources/echarts/node_modules
 
 #dynamic files
+output
 config.json
 
 target/

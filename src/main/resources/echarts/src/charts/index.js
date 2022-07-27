@@ -1,4 +1,4 @@
-var echarts = require("echarts");
+/*var echarts = require("echarts");
 
 const defaultConfig = {
     renderer: "svg",
@@ -29,6 +29,8 @@ function renderChart(widthParam, heightParam) {
     if (widthParam > 0 || heightParam > 0 ) {
         chartConfig.width = widthParam;
         chartConfig.height = heightParam;
+    } else {
+        return "";
     }
 
     const chart = echarts.init(null, null, chartConfig);
@@ -38,4 +40,4 @@ function renderChart(widthParam, heightParam) {
     return chart.renderToSVGString();
 }
 
-exports.renderChart = renderChart;
+exports.renderChart = renderChart;*/
