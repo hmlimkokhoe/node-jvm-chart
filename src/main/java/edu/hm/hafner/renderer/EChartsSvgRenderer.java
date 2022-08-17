@@ -6,15 +6,11 @@ import edu.hm.hafner.renderer.util.TriremeResourcesProvider;
 import io.apigee.trireme.core.NodeEnvironment;
 import io.apigee.trireme.core.NodeException;
 import io.apigee.trireme.core.NodeScript;
-// import io.apigee.trireme.core.ScriptStatus;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Returns an SVG as string, which is rendered using two string parameters specifying the configuration and export
@@ -22,8 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * Example API call: String mySvgChart = echartsSvgRenderer.createSvgString(configurationOptions, exportOptions);
  */
-public class EchartsSvgRenderer {
-    private static final Logger LOG = LoggerFactory.getLogger(EchartsSvgRenderer.class);
+public class EChartsSvgRenderer {
 
     private static final String ECHARTS_PATH = "/echarts/";
 
@@ -74,19 +69,14 @@ public class EchartsSvgRenderer {
             triremeParameters[triremeParameters.length - 1] = triremeWorkingDirectoryPath;
 
             echartsInstance = nodeEnv.createScript(JAVASCRIPT_FILENAME, eChartsFile, triremeParameters);
-        } catch (NodeException | IOException e) {
+
+            if (echartsInstance == null) {
+                throw new IllegalStateException("Failed to execute rendering due to system errors.");
+            } else {
+                echartsInstance.execute().get();
+            }
+        } catch (NodeException | IOException | InterruptedException | ExecutionException e) {
             throw new IllegalStateException("Failed to execute rendering due to system errors.", e);
-        }
-
-        if (echartsInstance == null) {
-            throw new IllegalStateException("Could not render SVG string due to system errors");
-        }
-
-        try {
-            LOG.info("Rendering ECharts charts in Trireme.");
-            echartsInstance.execute().get();
-        } catch (NodeException | InterruptedException | ExecutionException e) {
-            throw new IllegalStateException("System could not execute frontend scripts", e);
         }
 
         final SvgParser svgParser = new SvgParser();
