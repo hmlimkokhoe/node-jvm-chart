@@ -1,10 +1,4 @@
 {
-  "tooltip": {
-    "trigger": "axis",
-    "axisPointer": {
-      "type": "shadow"
-    }
-  },
   "legend": {},
   "grid": {
     "left": "3%",

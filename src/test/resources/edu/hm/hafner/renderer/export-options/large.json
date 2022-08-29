@@ -1,6 +1,4 @@
 {
-  "renderer": "svg",
-  "ssr": true,
   "width": 1102,
   "height": 756
 }

@@ -1,4 +1,4 @@
-package edu.hm.hafner.renderer.util;
+package edu.hm.hafner.renderer.io;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,18 +20,15 @@ public class TriremeResourcesProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(TriremeResourcesProvider.class);
 
+    private static final String ERROR_MESSAGE = "Failed to execute render due to system errors.";
+
     /**
      * Creates an Inputstream on elements found in the resources directory.
      * @param name Path of input elements
      * @return InputStream of input elements
      */
     private InputStream createInputStreamFromResource(String name) {
-        try {
-            return getClass().getResourceAsStream(name);
-        } catch (NullPointerException e) {
-            LOG.error("Failed to create InputStream for file with given name.", e);
-        }
-        return null;
+        return getClass().getResourceAsStream(name);
     }
 
     /**
@@ -46,12 +43,10 @@ public class TriremeResourcesProvider {
         final File tempFile = File.createTempFile("index", ".js");
         tempFile.deleteOnExit();
 
-        final FileOutputStream outputStream = new FileOutputStream(tempFile);
-
-        if (inputStream != null) {
-            IOUtils.copy(inputStream, outputStream);
-            LOG.info("Copied ECharts Javascript rendering file for usage by Trireme.");
+        if (inputStream == null) {
+            throw new IllegalStateException(ERROR_MESSAGE);
         }
+        IOUtils.copy(inputStream, new FileOutputStream(tempFile));
 
         return tempFile;
     }
@@ -61,15 +56,16 @@ public class TriremeResourcesProvider {
      * @return Path of temporary directory as string. Example in Linux: /tmp/trireme9684562791274531752
      */
     private String createTempDirectory() {
-        String tempDirectory = "";
+        String tempDirectory;
 
         try {
-            Path tempDirectoryPath = Files.createTempDirectory("trireme");
-            if (tempDirectoryPath != null) {
-                tempDirectory = tempDirectoryPath.toString();
+            final Path tempDirectoryPath = Files.createTempDirectory("trireme");
+            if (tempDirectoryPath == null) {
+                throw new IllegalStateException(ERROR_MESSAGE);
             }
+            tempDirectory = tempDirectoryPath.toString();
         } catch (IOException e) {
-            LOG.error("Failed to a create temporary directory in the operating system", e);
+            throw new IllegalStateException(ERROR_MESSAGE, e);
         }
         deleteTempDirectoryOnExit(tempDirectory);
 
@@ -81,22 +77,20 @@ public class TriremeResourcesProvider {
      * created after the Maven Compile process.
      * @return Array with file paths as strings
      */
-    private String[] parseEChartsPathsFile() {
-        String commaSeparatedPaths = "";
+    private String[] parseEChartsPathsFile() throws IOException {
+        final InputStream is = createInputStreamFromResource("/echarts-content.txt");
+        String commaSeparatedPaths;
 
-        try (InputStream is = createInputStreamFromResource("/echarts-content.txt")) {
-            if (is != null) {
-                commaSeparatedPaths = new String(IOUtils.toByteArray(is), StandardCharsets.UTF_8);
-            }
-        } catch (IOException e) {
-            LOG.error("Failed to parse file paths from node modules dependencies.", e);
+        if (is != null) {
+            commaSeparatedPaths = new String(IOUtils.toByteArray(is), StandardCharsets.UTF_8);
+        } else {
+            throw new IllegalStateException(ERROR_MESSAGE);
         }
 
-        if (!commaSeparatedPaths.isEmpty()) {
-            return commaSeparatedPaths.split(",");
-        } else {
+        if (commaSeparatedPaths.isEmpty()) {
             return new String[0];
         }
+        return commaSeparatedPaths.split(",");
     }
 
     /**
@@ -108,7 +102,7 @@ public class TriremeResourcesProvider {
             try {
                 FileUtils.forceDeleteOnExit(new File(tempDirectory));
             } catch (IOException e) {
-                LOG.error("Failed to delete temp directory", e);
+                throw new IllegalStateException(ERROR_MESSAGE, e);
             }
         }));
     }
@@ -118,28 +112,28 @@ public class TriremeResourcesProvider {
      * @param nodeModulesPath Path of original node_modules directory
      * @return Path of temporary directory clone
      */
-    public String copyNodeModulesFolder(String nodeModulesPath) {
+    public String copyNodeModulesFolder(String nodeModulesPath) throws IOException {
         String tempDirectoryPathString = createTempDirectory();
         String[] paths = parseEChartsPathsFile();
-
-        if (paths.length > 0 && !tempDirectoryPathString.isEmpty() && !nodeModulesPath.isEmpty()) {
-            // example of relative file path: /zrender/src/svg/domapi.ts
-            for (String path : paths) {
-                if (!path.contains(".package-lock.json") && !path.isEmpty()) {
-                    final String relativeFilePath = nodeModulesPath + path;
-
-                    try (InputStream fileStream = createInputStreamFromResource(relativeFilePath)) {
-                        final String fullTargetPathAsStr = tempDirectoryPathString + path;
-                        if (fileStream != null) {
-                            FileUtils.copyInputStreamToFile(fileStream, new File(fullTargetPathAsStr));
-                        }
-                    } catch (IOException e) {
-                        LOG.error("Failed to copy node modules dependencies", e);
-                    }
-                }
-            }
-            LOG.info("Copied node modules dependencies for usage by Trireme.");
+        if (paths.length > 1 && tempDirectoryPathString.isEmpty() && nodeModulesPath.isEmpty()) {
+            throw new IllegalStateException(ERROR_MESSAGE);
         }
+
+        // example of relative file path: /zrender/src/svg/domapi.ts
+        for (String path : paths) {
+            if (!path.contains(".package-lock.json") && !path.isEmpty()) {
+                final String relativeFilePath = nodeModulesPath + path;
+
+                final InputStream fileStream = createInputStreamFromResource(relativeFilePath);
+                final String fullTargetPathAsStr = tempDirectoryPathString + path;
+
+                if (fileStream == null) {
+                    throw new IllegalStateException(ERROR_MESSAGE);
+                }
+                FileUtils.copyInputStreamToFile(fileStream, new File(fullTargetPathAsStr));
+            }
+        }
+        LOG.info("Copied node modules dependencies for usage by Trireme.");
         return tempDirectoryPathString;
     }
 }
